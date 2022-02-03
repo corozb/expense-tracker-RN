@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, FlatList } from 'react-native'
+import React, { useState, useRef } from 'react'
+import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, FlatList, Animated } from 'react-native'
 
 import { COLORS, SIZES, FONTS, icons } from '../constants'
 
@@ -204,9 +204,12 @@ let categoriesData = [
 ]
 
 function Home() {
+  const categoryListHeightAnimationValue = useRef(new Animated.Value(95)).current
+
   const [viewMode, setViewMode] = useState('chart')
   const [categories, setCategories] = useState(categoriesData)
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [showMoreToogle, setShowMoreToogle] = useState(false)
 
   const renderNavbar = () => {
     return (
@@ -296,9 +299,33 @@ function Home() {
 
     return (
       <View style={{ paddingHorizontal: SIZES.padding - 5 }}>
-        <View>
+        <Animated.View style={{ height: categoryListHeightAnimationValue }}>
           <FlatList data={categories} renderItem={renderItem} keyExtractor={(item) => `${item.id}`} numColumns={2} />
-        </View>
+        </Animated.View>
+
+        {/* More Button */}
+        <TouchableOpacity
+          style={styles.moreButton}
+          onPress={() => {
+            if (showMoreToogle) {
+              Animated.timing(categoryListHeightAnimationValue, {
+                toValue: 95,
+                duration: 500,
+                useNativeDriver: false,
+              }).start()
+            } else {
+              Animated.timing(categoryListHeightAnimationValue, {
+                toValue: 172.5,
+                duration: 500,
+                useNativeDriver: false,
+              }).start()
+            }
+            setShowMoreToogle(!showMoreToogle)
+          }}
+        >
+          <Text style={{ ...FONTS.body4 }}>{showMoreToogle ? 'LESS' : 'MORE'}</Text>
+          <Image style={styles.arrowStyle} source={showMoreToogle ? icons.up_arrow : icons.down_arrow} />
+        </TouchableOpacity>
       </View>
     )
   }
@@ -384,6 +411,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 3,
+  },
+
+  moreButton: {
+    flexDirection: 'row',
+    marginVertical: SIZES.base,
+    justifyContent: 'center',
+  },
+
+  arrowStyle: {
+    marginLeft: 5,
+    width: 15,
+    height: 15,
+    alignSelf: 'center',
   },
 })
 
