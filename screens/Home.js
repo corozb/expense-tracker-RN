@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native'
 
 import { COLORS, SIZES, FONTS, icons } from '../constants'
 
 function Home() {
+  const [viewMode, setViewMode] = useState('chart')
+
   const renderNavbar = () => {
     return (
       <View style={styles.navbar}>
@@ -42,10 +44,44 @@ function Home() {
     )
   }
 
+  const renderCategory = () => (
+    <View style={styles.categoriesContainer}>
+      <View>
+        <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>CATEGORIES</Text>
+        <Text style={{ color: COLORS.primary, ...FONTS.body4 }}>Total</Text>
+      </View>
+
+      {/* Buttons */}
+      <View style={{ flexDirection: 'row' }}>
+        <TouchableOpacity
+          style={{ ...styles.buttonCategory, backgroundColor: viewMode === 'chart' ? COLORS.secondary : null }}
+          onPress={() => setViewMode('chart')}
+        >
+          <Image
+            source={icons.chart}
+            resizeMode='contain'
+            style={{ ...styles.buttonImage, tintColor: viewMode === 'chart' ? COLORS.white : COLORS.darkgray }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.buttonCategory, backgroundColor: viewMode === 'list' ? COLORS.secondary : null }}
+          onPress={() => setViewMode('list')}
+        >
+          <Image
+            source={icons.menu}
+            resizeMode='contain'
+            style={{ ...styles.buttonImage, tintColor: viewMode === 'list' ? COLORS.white : COLORS.darkgray }}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.lightGray2 }}>
       {renderNavbar()}
       {renderHeader()}
+      {renderCategory()}
     </View>
   )
 }
@@ -78,6 +114,26 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  categoriesContainer: {
+    flexDirection: 'row',
+    padding: SIZES.padding,
+    justifyContent: 'space-between',
+    alignContent: 'center',
+  },
+
+  buttonCategory: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+  },
+
+  buttonImage: {
+    width: 20,
+    height: 20,
   },
 })
 
