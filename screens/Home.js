@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, FlatList, Animated } from 'react-native'
+import { VictoryPie } from 'victory-native'
 
 import { COLORS, SIZES, FONTS, icons } from '../constants'
 
@@ -423,6 +424,73 @@ function Home() {
     )
   }
 
+  const processCategoryDatatoDisplay = () => {
+    // Filter expenses with "Confirmed" status
+    const chartData = categories.map((item) => {
+      const confirmedExpenses = item.expenses.filter((a) => a.status === 'C')
+      const total = confirmedExpenses.reduce((a, b) => a + (b.total || 0), 0)
+
+      return {
+        name: item.name,
+        y: total,
+        expenseCount: confirmedExpenses.length,
+        color: item.color,
+        id: item.id,
+      }
+    })
+
+    // Filter out categories with no data/expenses
+    const filterChartData = chartData.filter((a) => a.y > 0)
+
+    // Calculate the total expenses
+    const totalExpense = filterChartData.reduce((a, b) => a + (b.y || 0), 0)
+
+    // Calculate percentage and repopulate chart data
+    const finalChartData = filterChartData.map((item) => {
+      let percentage = ((item.y / totalExpense) * 100).toFixed(0)
+
+      return {
+        label: `${percentage}%`,
+        y: +item.y,
+        expenseCount: item.expenseCount,
+        color: item.color,
+        name: item.name,
+        id: item.id,
+      }
+    })
+
+    return finalChartData
+  }
+
+  const renderChart = () => {
+    const chartData = processCategoryDatatoDisplay()
+    const colorScales = chartData.map((item) => item.color)
+    const totalExpenseCount = chartData.reduce((a, b) => a + (b.expenseCount || 0), 0)
+
+    return (
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <VictoryPie
+          data={chartData}
+          colorScale={colorScales}
+          labels={(datum) => `${datum.y}`}
+          radius={SIZES.width * 0.4 - 10}
+          innerRadius={70}
+          labelRadius={({ innerRadius }) => (SIZES.width * 0.4 + innerRadius) / 2.5}
+          style={{
+            labels: { fill: COLORS.white, ...FONTS.body3 },
+            parent: { ...styles.shadow },
+          }}
+          width={SIZES.width * 0.8}
+          height={SIZES.width * 0.8}
+        />
+        <View style={{ position: 'absolute', top: '42%', left: '42%' }}>
+          <Text style={{ ...FONTS.h1, textAlign: 'center' }}>{totalExpenseCount}</Text>
+          <Text style={{ ...FONTS.body3, textAlign: 'center' }}>Expenses</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.lightGray2 }}>
       {renderNavbar()}
@@ -436,6 +504,7 @@ function Home() {
             {renderIncomingExpenses()}
           </View>
         )}
+        {viewMode === 'chart' && <View>{renderChart()}</View>}
       </ScrollView>
     </View>
   )
